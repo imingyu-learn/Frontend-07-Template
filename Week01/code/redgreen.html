@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+        <style>
+            div {
+                background-color: grey;
+                width: 100px;
+                height: 100px;
+                float: left;
+                margin-left: 20px;
+                border-radius: 50%;
+            }
+            #red.light {
+                background-color: red;
+            }
+            #green.light {
+                background-color: green;
+            }
+            #yellow.light {
+                background-color: yellow;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="green"></div>
+        <div id="yellow"></div>
+        <div id="red"></div>
+        <button type="button" onclick="startAutoGo()">开始自动</button>
+        <button type="button" onclick="allowAuto=false">停止自动</button>
+        <button type="button" onclick="handNext()">手动下一个</button>
+        <script>
+            const light = ["green", "yellow", "red"].reduce(
+                (sum, item, index, arr) => {
+                    if (!sum.colors) {
+                        sum.colors = arr;
+                    }
+                    if (!sum[`${item}El`]) {
+                        sum[`${item}El`] = document.getElementById(item);
+                    }
+                    if (!sum[`${item}Time`]) {
+                        sum[`${item}Time`] = !index
+                            ? 1000
+                            : index < 2
+                            ? 200
+                            : 500;
+                    }
+                    sum[item] = function () {
+                        clear();
+                        sum.active = item;
+                        sum[`${item}El`].className = "light";
+                        return item;
+                    };
+                    return sum;
+                },
+                {}
+            );
+            const clear = () => {
+                light.colors.forEach((color) => {
+                    light[`${color}El`].className = "";
+                });
+            };
+            const sleep = (time) =>
+                new Promise((resolve) => setTimeout(resolve, time));
+
+            var allowAuto = true;
+            const startAutoGo = (() => {
+                const go = async () => {
+                    while (true) {
+                        light.green();
+                        await sleep(light.greenTime);
+                        if (!allowAuto) {
+                            break;
+                        }
+                        light.yellow();
+                        await sleep(light.yellowTime);
+                        if (!allowAuto) {
+                            break;
+                        }
+                        light.red();
+                        await sleep(light.redTime);
+                        if (!allowAuto) {
+                            break;
+                        }
+                    }
+                };
+                return () => {
+                    allowAuto = true;
+                    handColors = null;
+                    handGenerator = null;
+                    isDone = false;
+                    go();
+                };
+            })();
+
+            let handColors;
+            let handGenerator;
+            let isDone;
+            const handNext = () => {
+                if (!handColors) {
+                    const index = light.colors.indexOf(light.active);
+                    handColors =
+                        index > 1
+                            ? light.colors
+                            : light.colors
+                                  .slice(index + 1)
+                                  .concat(light.colors.slice(0, index + 1));
+                }
+                if (!handGenerator) {
+                    handGenerator = (function* () {
+                        for (let color of handColors) {
+                            yield light[color]();
+                        }
+                        return;
+                    })();
+                }
+                if (handGenerator.next().done) {
+                    handGenerator = null;
+                    handNext();
+                }
+            };
+        </script>
+    </body>
+</html>

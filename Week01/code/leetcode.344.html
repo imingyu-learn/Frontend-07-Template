@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        <a href="https://leetcode-cn.com/problems/reverse-string/"
+            >344. 反转字符串</a
+        >
+        <script>
+            /**
+             * @param {character[]} s
+             * @return {void} Do not return anything, modify s in-place instead.
+             */
+            var reverseString = function (charList) {
+                for (
+                    let i = 0, len = charList.length, half = len / 2, char;
+                    i < half;
+                    i++
+                ) {
+                    char = charList[i];
+                    charList[i] = charList[len - 1 - i];
+                    charList[len - 1 - i] = char;
+                }
+                return charList;
+            };
+            console.log(reverse("abcdefg".split("")));
+            console.log(reverse("1234".split("")));
+            console.log(reverse("AB".split("")));
+            console.log(reverse("569".split("")));
+        </script>
+    </body>
+</html>

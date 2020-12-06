@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        <a href="https://leetcode-cn.com/problems/reverse-string/"
+            >572. 另一个树的子树</a
+        >
+        <script>
+            /**
+             * Definition for a binary tree node.
+             * function TreeNode(val, left, right) {
+             *     this.val = (val===undefined ? 0 : val)
+             *     this.left = (left===undefined ? null : left)
+             *     this.right = (right===undefined ? null : right)
+             * }
+             */
+            /**
+             * @param {TreeNode} s
+             * @param {TreeNode} t
+             * @return {boolean}
+             */
+            var isSubtree = function (s, t) {
+                if (s.val === t.val) {
+                }
+                for (let i = 0, len = s.length, len2 = t.length; i < len; i++) {
+                    if (s[i] === t[0]) {
+                        let isSub = true;
+                        for (let j = 0; j < len2; j++) {
+                            if (s[i + j] !== t[j]) {
+                                isSub = false;
+                            }
+                        }
+                        if (isSub && i + j == len - 1) return true;
+                    }
+                }
+                return false;
+            };
+            var check = (s, t) => {
+                if (s && t && s.val === t.val) {
+                    return check(s.left, t.left) && check(s.right, t.right);
+                }
+                return false;
+            };
+        </script>
+    </body>
+</html>

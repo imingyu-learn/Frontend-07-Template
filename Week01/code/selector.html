@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+        <style>
+            [name*="ee"] {
+                font-weight: bold;
+            }
+            [name~="ie"] {
+                color: red;
+            }
+            [name|="kill"] {
+                color: red;
+            }
+            [name^="kill"] {
+                font-weight: bold;
+            }
+            div:empty{
+                width:100px;
+                height: 100px;
+                background-color: red;
+            }
+            .empty2::before{
+                content: '';
+                display: block;
+                width:10px;
+                height: 10px;
+                background-color: blue;
+            }
+        </style>
+    </head>
+    <body>
+        <div name="iekk">jeck</div>
+        <div name="ie">jeck</div>
+        <div name="ie_kk">jeck</div>
+        <div name="alice">alice</div>
+        <br />
+        <br />
+        <br />
+
+        <div name="kill">kill</div>
+        <div name="kill2">kill</div>
+        <div name="kill-3">kill</div>
+        <div name="kill_4">kill</div>
+        <div name="kill 5">kill</div>
+
+        <div>23434</div>
+        <div class="empty2"></div>
+    </body>
+</html>
