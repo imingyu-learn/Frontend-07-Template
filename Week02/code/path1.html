@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+        <style>
+            .cell {
+                width: 5px;
+                height: 5px;
+                background-color: grey;
+                display: inline-block;
+                border-right: 1px solid #fff;
+                border-bottom: 1px solid #fff;
+                box-sizing: border-box;
+            }
+            .status-has {
+                background-color: black;
+            }
+            #map {
+                width: 500px;
+                line-height: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <button type="button" onclick="save()">保存</button>
+        <script src="../../util/dom.js"></script>
+        <script>
+            var mapState;
+            var mapEl;
+            var initMap = () => {
+                mapState = localStorage.getItem("map")
+                    ? JSON.parse(localStorage.getItem("map"))
+                    : Array(10000).fill(0);
+                if (!mapEl) {
+                    mapEl = createElement(
+                        "div",
+                        {
+                            id: "map",
+                        },
+                        mapState.map((item, index) => {
+                            return createElement("span", {
+                                class: `cell cell-${index} ${
+                                    mapState[index] === 1
+                                        ? "status-has"
+                                        : "status-empty"
+                                }`,
+                                "data-index": index,
+                            });
+                        }),
+                        document.body
+                    );
+                }
+                Array.prototype.forEach.call(mapEl.children, (el) => {
+                    removeClass(el, "status-has");
+                    addClass(el, "status-empty");
+                });
+            };
+            var bindMapEvent = () => {
+                let mouseDown;
+                let clear;
+                document.addEventListener(
+                    "mousemove",
+                    (e) => {
+                        if (mouseDown && isClass(e.target, "cell")) {
+                            if (!clear) {
+                                removeClass(e.target, "status-empty");
+                                addClass(e.target, "status-has");
+                                mapState[e.target.dataset.index] = 1;
+                            } else {
+                                removeClass(e.target, "status-has");
+                                addClass(e.target, "status-empty");
+                                mapState[e.target.dataset.index] = 0;
+                            }
+                        }
+                    },
+                    false
+                );
+                document.addEventListener(
+                    "mousedown",
+                    (e) => {
+                        mouseDown = true;
+                        clear = e.which === 3;
+                    },
+                    false
+                );
+                document.addEventListener(
+                    "mouseup",
+                    (e) => {
+                        mouseDown = false;
+                    },
+                    false
+                );
+                document.addEventListener(
+                    "contextmenu",
+                    (e) => {
+                        if (
+                            e.target.id === "map" ||
+                            isClass(e.target, "cell")
+                        ) {
+                            e.preventDefault();
+                        }
+                    },
+                    false
+                );
+            };
+
+            var save = () => {
+                localStorage.setItem("map", JSON.stringify(mapState));
+            };
+
+            initMap();
+            bindMapEvent();
+        </script>
+    </body>
+</html>

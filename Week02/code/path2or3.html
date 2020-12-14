@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+        <style>
+            .cell {
+                width: 5px;
+                height: 5px;
+                background-color: grey;
+                display: block;
+                border-right: 1px solid #fff;
+                border-bottom: 1px solid #fff;
+                box-sizing: border-box;
+                white-space: normal;
+                word-break: break-all;
+                font-size: 12px;
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+            .status-has1 {
+                background-color: black;
+            }
+            .status-has2 {
+                background-color: yellow;
+            }
+            .status-target {
+                background-color: red !important;
+            }
+            #map {
+                width: 500px;
+                line-height: 0;
+                display: flex;
+                flex-wrap: wrap;
+            }
+        </style>
+    </head>
+    <body>
+        <button type="button" onclick="save()">保存</button>
+        <script src="../../util/dom.js"></script>
+        <script src="../../util/util.js"></script>
+        <script>
+            var mapState;
+            var mapEl;
+            var initMap = () => {
+                mapState = localStorage.getItem("map")
+                    ? JSON.parse(localStorage.getItem("map"))
+                    : Array(10000).fill(0);
+                if (!mapEl) {
+                    mapEl = createElement(
+                        "div",
+                        {
+                            id: "map",
+                        },
+                        mapState.map((item, index) => {
+                            return createElement("span", {
+                                class: `cell cell-${index} ${
+                                    mapState[index] === 1
+                                        ? "status-has1"
+                                        : mapState[index] === 2
+                                        ? "status-has2"
+                                        : mapState[index] === -1
+                                        ? "status-target"
+                                        : "status-empty"
+                                }`,
+                                "data-index": index,
+                            });//,index+','+`${parseInt(index/100)},${index%100}`
+                        }),
+                        document.body
+                    );
+                }
+                Array.prototype.forEach.call(mapEl.children, (el) => {
+                    removeClass(el, "status-has");
+                    addClass(el, "status-empty");
+                });
+            };
+            var bindMapEvent = () => {
+                let mouseDown;
+                let clear;
+                document.addEventListener(
+                    "mousemove",
+                    (e) => {
+                        if (mouseDown && isClass(e.target, "cell")) {
+                            if (!clear) {
+                                setCellStatus(
+                                    e.target,
+                                    1,
+                                    e.target.dataset.index
+                                );
+                            } else {
+                                setCellStatus(
+                                    e.target,
+                                    0,
+                                    e.target.dataset.index
+                                );
+                            }
+                        }
+                    },
+                    false
+                );
+                document.addEventListener(
+                    "mousedown",
+                    (e) => {
+                        mouseDown = true;
+                        clear = e.which === 3;
+                    },
+                    false
+                );
+                document.addEventListener(
+                    "mouseup",
+                    (e) => {
+                        mouseDown = false;
+                    },
+                    false
+                );
+                document.addEventListener(
+                    "contextmenu",
+                    (e) => {
+                        if (
+                            e.target.id === "map" ||
+                            isClass(e.target, "cell")
+                        ) {
+                            e.preventDefault();
+                        }
+                    },
+                    false
+                );
+            };
+            var setCellStatus = (el, status, x, y) => {
+                let index;
+                if (typeof y === "undefined") {
+                    index = x;
+                    x = parseInt(x / 100);
+                    y = x % 100;
+                } else {
+                    index = x * 100 + y;
+                }
+                el = el || document.querySelectorAll(`.cell-${index}`)[0];
+                mapState[index] = status;
+                if (status === 1) {
+                    removeClass(el, "status-empty status-has2");
+                    addClass(el, "status-has1");
+                } else if (status === 2) {
+                    removeClass(el, "status-empty status-has1");
+                    addClass(el, "status-has2");
+                } else if (status == -1) {
+                    addClass(el, "status-target");
+                } else {
+                    removeClass(el, "status-has2 status-has1");
+                    addClass(el, "status-empty");
+                }
+            };
+
+            var save = () => {
+                localStorage.setItem("map", JSON.stringify(mapState));
+            };
+
+            var getPath = async (map, start, end) => {
+                setCellStatus(null, -1, end[0], end[1]);
+                const queue = [start];
+                const insert = (x, y) => {
+                    if (x < 0 || x >= 100 || y < 0 || y >= 100) {
+                        return sleep();
+                    }
+                    const index = x * 100 + y;
+                    if (mapState[index] > 0) {
+                        return sleep();
+                    }
+                    mapState[index] = 2;
+                    setCellStatus(null, 2, index); 
+                    queue.push([x, y]);
+                    return sleep();
+                };
+                while (queue.length) {
+                    const [x, y] = queue.shift();
+                    console.log(`${x},${y}`);
+                    if (x === end[0] && y === end[1]) {
+                        return true;
+                    }
+                    if (window.stop22) {
+                        return false;
+                    }
+                    await insert(x - 1, y);
+                    await insert(x + 1, y);
+                    await insert(x, y - 1);
+                    await insert(x, y + 1);
+                }
+                return false;
+            };
+
+            initMap();
+            bindMapEvent();
+        </script>
+    </body>
+</html>
