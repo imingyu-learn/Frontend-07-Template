@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        <script>
+            const regexp = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g;
+            const dictionary = [
+                "Number",
+                "Whitespace",
+                "LineTermaintor",
+                "*",
+                "/",
+                "+",
+                "-",
+            ];
+            function* tokenize(source) {
+                const list = [];
+                let lastIndex = 0;
+                let res;
+                while (true) {
+                    lastIndex = regexp.lastIndex;
+                    res = regexp.exec(source);
+                    if (!res) {
+                        break;
+                    }
+                    if (regexp.lastIndex - lastIndex > res[0].length) {
+                        break;
+                    }
+                    let token = {
+                        type: "",
+                        value: "",
+                    };
+                    for (let i = 1, len = dictionary.length; i <= len; i++) {
+                        if (res[i]) {
+                            token.type = dictionary[i - 1];
+                        }
+                    }
+                    token.value = res[0];
+                    list.push(token);
+                    yield token;
+                }
+                return list;
+            }
+            const tt = tokenize("1024 + 10 * 25");
+            console.log(tt);
+            for (let item of tt) {
+                console.log(item);
+            }
+            console.log(tt);
+        </script>
+    </body>
+</html>
