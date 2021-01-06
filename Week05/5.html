@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        <script>
+            const obj = {
+                a: { b: 3 },
+                b: 2,
+            };
+            const reactiveMap = new Map();
+            const reactive = (obj) => {
+                if (reactiveMap.has(obj)) {
+                    return reactiveMap.get(obj);
+                }
+                const po = new Proxy(obj, {
+                    set(obj, prop, val) {
+                        obj[prop] = val;
+                        if (callbacks.has(obj)) {
+                            const cbs = callbacks.get(obj).get(prop);
+                            if (cbs) {
+                                for (let cb of cbs) {
+                                    cb();
+                                }
+                            }
+                        }
+                    },
+                    get(obj, prop) {
+                        debugger;
+                        usedReactivties.push([obj, prop]);
+                        if (typeof obj[prop] === "object") {
+                            return reactive(obj[prop]);
+                        }
+                        return obj[prop];
+                    },
+                });
+                reactiveMap.set(obj, po);
+                return po;
+            };
+            const callbacks = new Map();
+            let usedReactivties;
+            const effect = (cb) => {
+                usedReactivties = [];
+                cb();
+                for (let [obj, prop] of usedReactivties) {
+                    if (!callbacks.has(obj)) {
+                        callbacks.set(obj, new Map());
+                    }
+                    const item = callbacks.get(obj);
+                    if (!item.has(prop)) {
+                        item.set(prop, []);
+                    }
+                    item.get(prop).push(cb);
+                }
+                console.log(usedReactivties);
+            };
+            const po = reactive(obj);
+
+            effect(() => {
+                console.log("effect=" + po.a.b);
+            });
+        </script>
+    </body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        <script>
+            const obj = {
+                a: 1,
+                b: 2,
+            };
+            const reactive = (obj) => {
+                return new Proxy(obj, {
+                    set(obj, prop, val) {
+                        obj[prop] = val;
+                        for (let cb of callbacks) {
+                            cb();
+                        }
+                        return 6; // 执行x=(po.a=5), x的值就是5，而不是6，所以return语句返回的值并不会影响(po.a=5)表达式的值
+                    },
+                    get(obj, prop) {
+                        return obj[prop];
+                    },
+                });
+            };
+            const callbacks = [];
+            const effect = (cb) => {
+                callbacks.push(cb);
+            };
+            const po = reactive(obj);
+
+            effect(() => {
+                console.log("effect=" + po.a);
+            });
+        </script>
+    </body>
+</html>
